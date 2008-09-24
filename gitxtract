@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Contributors:
+#   Antti Kaihola <akaihol+git@ambitone.com>
+
+# Changelog:
+#   2008-09-24 initial version 1.0
+
+usage() {
+  echo "gitxtract 1.0 - copy all or some files from a git repository"
+  echo "usage: gitxtract [OPTION]... REPOSITORY [DESTINATION]"
+  echo "  -b, --branch=BRANCH (default: master)"
+  echo "  -c, --commit COMMIT (default: head of branch)"
+  echo "  -p, --partial PATHSPEC (default: root of repository)"
+  echo "  REPOSITORY: URL or local directory"
+  echo "  DESTINATION/ saves PATHSPEC *inside* the directory DESTINATION"
+  echo "  DESTINATION  saves PATHSPEC *as* the directory/file DESTINATION"
+  exit 1
+}
+
+TEMP=`getopt -o b:c:p: -l branch:,commit:,partial: -n 'gitxtract' -- "$@"`
+if [[ $? != 0 ]] ; then usage ; fi
+eval set -- "$TEMP"
+BRANCH=master
+COMMIT=FETCH_HEAD
+SRC=
+DEST=./
+while test "X$1" != "X--"; do
+  case "$1" in
+    -b|--branch) BRANCH="$2" ; shift 2 ;;
+    -c|--commit) COMMIT="$2" ; shift 2 ;;
+    -p|--partial) SRC="$2" ; shift 2 ;;
+    *) usage ;;
+  esac
+done
+shift
+if [[ "$1" == "" ]]; then usage ; fi
+REPO=$1 ; shift
+REPONAME=${REPO##*/}
+if [[ "$1" != "" ]]; then DEST=$1 ; fi
+TMPDIR=`mktemp -d`
+REPODIR=$TMPDIR/$REPONAME
+mkdir $REPODIR
+pushd $REPODIR >/dev/null
+git init -q
+git fetch -q $REPO $BRANCH
+git reset -q --hard $COMMIT
+rm .git -rf
+popd >/dev/null
+mv -v --backup=t $REPODIR/$SRC $DEST
+rm $TMPDIR -rf
