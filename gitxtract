@@ -18,13 +18,15 @@
 
 # Changelog:
 #   2008-09-24 initial version 1.0
+#   2008-09-24 version 1.1 handles multiple partial paths
 
 usage() {
-  echo "gitxtract 1.0 - copy all or some files from a git repository"
+  echo "gitxtract 1.1 - copy all or some files from a git repository"
   echo "usage: gitxtract [OPTION]... REPOSITORY [DESTINATION]"
   echo "  -b, --branch=BRANCH (default: master)"
   echo "  -c, --commit COMMIT (default: head of branch)"
   echo "  -p, --partial PATHSPEC (default: root of repository)"
+  echo "                (multiple -p options can be specified)"
   echo "  REPOSITORY: URL or local directory"
   echo "  DESTINATION/ saves PATHSPEC *inside* the directory DESTINATION"
   echo "  DESTINATION  saves PATHSPEC *as* the directory/file DESTINATION"
@@ -36,13 +38,13 @@ if [[ $? != 0 ]] ; then usage ; fi
 eval set -- "$TEMP"
 BRANCH=master
 COMMIT=FETCH_HEAD
-SRC=
+declare -a SRC
 DEST=./
 while test "X$1" != "X--"; do
   case "$1" in
     -b|--branch) BRANCH="$2" ; shift 2 ;;
     -c|--commit) COMMIT="$2" ; shift 2 ;;
-    -p|--partial) SRC="$2" ; shift 2 ;;
+    -p|--partial) SRC[${#SRC[*]}]="$2" ; shift 2 ;;
     *) usage ;;
   esac
 done
@@ -60,5 +62,7 @@ git fetch -q $REPO $BRANCH
 git reset -q --hard $COMMIT
 rm .git -rf
 popd >/dev/null
-mv -v --backup=t $REPODIR/$SRC $DEST
+for src in "${SRC[@]}"; do
+  mv -v --backup=t $REPODIR/$src $DEST
+done
 rm $TMPDIR -rf

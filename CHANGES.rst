@@ -6,3 +6,4 @@
  * created v1.0 of the ``gitxtract`` script
  * created v1.0 of the ``gitxternals`` script
  * wrote ``README.rst`` and ``CHANGES.rst``
+ * v1.1 of ``gitxtract`` handles multiple partial paths

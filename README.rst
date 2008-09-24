@@ -13,10 +13,12 @@ Use gitxtract to copy all or some files from a git repository.
 Examples
 ========
 
-This command would copy the ``gitxtract`` script to your ``$HOME/bin``
-directory::
+This command would copy the most current versions ``gitxtract`` and
+``gitxternals`` scripts from the ``git-xt`` repository master branch
+to your ``$HOME/bin`` directory::
 
-  gitxtract --branch master --partial gitxtract git://github.com/akaihola/git-xt.git ~/bin/
+  gitxtract --branch master --partial gitxtract --partial gitxternals \
+            git://github.com/akaihola/git-xt.git ~/bin/
 
 
 -------------
