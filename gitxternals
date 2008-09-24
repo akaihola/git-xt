@@ -1,0 +1,50 @@
+#!/bin/bash
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Contributors:
+#   Antti Kaihola <akaihol+git@ambitone.com>
+
+# Changelog:
+#   2008-09-24 initial version 1.0
+
+usage() {
+  echo "gitxternals 1.0 - copy from git repositories with config file "
+  echo "usage: gitxternals [PATHSPEC]"
+  echo "  FILESPEC: path of directory or config file in directory"
+  echo "            defaults to .gitxternals in the current directory"
+  exit 1
+}
+
+GITXTRACT=$(type -p gitxtract)
+[[ "$GITXTRACT" == "" ]] && GITXTRACT="$(cd ${0%/*};pwd)/gitxtract"
+if [[ ! -x "$GITXTRACT" ]]; then
+  echo "gitxtract not found"
+  exit 1
+fi
+
+CONFIG=.
+if [[ "$1" != "" ]]; then
+  CONFIG="$1"
+fi
+
+if [[ -f "$CONFIG/.gitxternals" ]]; then
+  CONFIG="$CONFIG/.gitxternals"
+fi
+
+while read line; do
+  pushd ${CONFIG%/*} >/dev/null
+  $GITXTRACT $line
+  popd >/dev/null
+done <$CONFIG
