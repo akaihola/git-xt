@@ -59,7 +59,7 @@ mkdir $REPODIR
 pushd $REPODIR >/dev/null
 git init -q
 git fetch -q $REPO $BRANCH
-git reset -q --hard $COMMIT
+git reset --hard $COMMIT
 rm .git -rf
 popd >/dev/null
 for src in "${SRC[@]}"; do
