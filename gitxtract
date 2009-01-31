@@ -36,8 +36,6 @@ usage() {
 TEMP=`getopt -o b:c:p: -l branch:,commit:,partial: -n 'gitxtract' -- "$@"`
 if [[ $? != 0 ]] ; then usage ; fi
 eval set -- "$TEMP"
-BRANCH=master
-COMMIT=FETCH_HEAD
 declare -a SRC
 DEST=./
 while test "X$1" != "X--"; do
@@ -50,17 +48,39 @@ while test "X$1" != "X--"; do
 done
 shift
 if [[ "$1" == "" ]]; then usage ; fi
-REPO=$1 ; shift
+case $1 in 
+  .*) REPO=$(cd $1;pwd) ; LOCAL=true ;;
+  ssh://*) REPO=$1 ; LOCAL= ; TOOL=git ;;
+  git://*) REPO=$1 ; LOCAL= ; TOOL=git ;;
+  *) REPO=$1 ; LOCAL=true ;; 
+esac ; shift
+if [[ -n $LOCAL ]]; then
+  if [[ -e $REPO/.hg ]]; then TOOL=hg; fi
+  if [[ -e $REPO/.git ]]; then TOOL=git; fi
+  ( cd $REPO ; git show 2>&1 >/dev/null ) && TOOL=git
+fi
 REPONAME=${REPO##*/}
 if [[ "$1" != "" ]]; then DEST=$1 ; fi
 TMPDIR=`mktemp -d`
 REPODIR=$TMPDIR/$REPONAME
 mkdir $REPODIR
 pushd $REPODIR >/dev/null
-git init -q
-git fetch -q $REPO $BRANCH
-git reset --hard $COMMIT
-rm .git -rf
+case $TOOL in
+  git)
+    if [[ "$BRANCH" == "" ]]; then BRANCH=master; fi
+    if [[ "$COMMIT" == "" ]]; then COMMIT=FETCH_HEAD; fi
+    git init -q
+    git fetch -q $REPO $BRANCH
+    git reset --hard $COMMIT
+    rm .git -rf
+    ;;
+  hg)
+    if [[ "$BRANCH" == "" ]]; then BRANCH=default; fi
+    hg init
+    hg pull $REPO#$BRANCH$COMMIT
+    hg update $COMMIT
+    ;;
+esac
 popd >/dev/null
 for src in "${SRC[@]}"; do
   mv -v --backup=t $REPODIR/$src $DEST

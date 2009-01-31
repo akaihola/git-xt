@@ -8,7 +8,8 @@ Utilities for extracting files from git repositories
  gitxtract
 -----------
 
-Use gitxtract to copy all or some files from a git repository.
+Use gitxtract to copy all or some files from a git or mercurial
+repository.
 
 Examples
 ========
@@ -25,10 +26,10 @@ to your ``$HOME/bin`` directory::
  gitxternals
 -------------
 
-Copy all or some files from multiple git repositories.  Specify
-arguments to successive ``gitxtract`` calls in a ``.gitxternals``
-file.  ``gitxtract`` will be executed in the same directory with the
-``.gitxternals`` file.
+Copy all or some files from multiple git or mercurial repositories.
+Specify arguments to successive ``gitxtract`` calls in a
+``.gitxternals`` file.  ``gitxtract`` will be executed in the same
+directory with the ``.gitxternals`` file.
 
 Examples
 ========
